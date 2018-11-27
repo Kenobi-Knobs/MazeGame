@@ -4,6 +4,7 @@
 #include<cstdlib>
 #include<ctime>
 #include <unistd.h>
+
 using namespace std;
 
 bool impasse(int, int, int**, int, int); //визначає тупики
@@ -79,7 +80,11 @@ public:
 };
 
 void stop(){
-void win(){// екран перемоги
+    Sleep(100);
+    sleep(1/100);
+}
+
+void win(){
     SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 5));
     cout<<"      ___                          \n";
     cout<<"  _.-|   |          |\\__/,|   (`\\  \n";
@@ -96,7 +101,7 @@ void win(){// екран перемоги
     SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 7));
 }
 
-void prew(){// початковий екран
+void prew(){
     SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 10));
     cout<<"      ,--.   ,--.      ,---.      ,-------.    ,------. \n";
     cout<<"      |   `.'   |     /  O  \\     `--.   /     |  .---' \n";
@@ -137,21 +142,64 @@ void prew(){// початковий екран
     SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 7));
 }
 
-void stop(){ // зупинка на 100мс
-    Sleep(100);
-    sleep(1/100);
+void crushWall(Maze maze, Hero hero, int key){// up-1 down-2 left-3 right-4
+    switch(key){
+        case 1:
+            maze.maze[hero.y - 1][hero.x] = pass;
+            position.Y = hero.y - 1;
+            SetConsoleCursorPosition(hConsole, position);
+            maze.visual(hero.y - 1); break;
+        case 2:
+            maze.maze[hero.y + 1][hero.x] = pass;
+            position.Y = hero.y + 1;
+            SetConsoleCursorPosition(hConsole, position);
+            maze.visual(hero.y + 1); break;
+            break;
+        case 3:
+            maze.maze[hero.y][hero.x - 1] = pass;
+            position.Y = hero.y;
+            SetConsoleCursorPosition(hConsole, position);
+            maze.visual(hero.y); break;
+            break;
+        case 4:
+            maze.maze[hero.y][hero.x + 1] = pass;
+            position.Y = hero.y;
+            SetConsoleCursorPosition(hConsole, position);
+            maze.visual(hero.y); break;
+            break;
+    }
 }
 
-void game(Maze maze, Hero hero){
+void crushPoint(int crush, Maze maze){
+    position.Y = maze.height;
+    SetConsoleCursorPosition(hConsole, position);
+    if(crush != 0){
+        SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 12));
+        cout << "Crush : ";
+        for(int i = 0; i < crush; i++){
+            cout<< " * ";
+        }
+        cout << "   ";
+        SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 2));
+    }else{
+        position.Y = maze.height;
+        SetConsoleCursorPosition(hConsole, position);
+        cout << "        ";
+    }
+}
+
+void game(Maze maze, Hero hero, int crush){
     unsigned int start_time, end_time, search_time;
     int flag = 0; // індикатор проходження лабіринту
     position.X = 0;
     position.Y = 0;
-    int moveCounter = 0; // лічильник переміщень
+    int moveCounter = 0;
+
     system("cls"); // очищаємо поле
     SetConsoleCursorPosition(hConsole, position);//курсор в початок
     maze.maze[hero.y][hero.x] = 2; // початкове полложення героя
     maze.visual(); // відрисувати кадр
+    crushPoint(crush, maze);
 
     start_time = clock();
     while(flag == 0){
@@ -160,7 +208,34 @@ void game(Maze maze, Hero hero){
             system("cls");
             win();
         }else{
-
+            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_UP) && maze.maze[hero.y - 1][hero.x] == wall){
+                if(hero.y - 1 != maze.height-1 && hero.y - 1 != 0 && crush != 0){
+                    crushWall(maze, hero, 1);
+                    crush--;
+                    crushPoint(crush, maze);
+                }
+            }
+            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_DOWN) && maze.maze[hero.y + 1][hero.x] == wall){
+                if(hero.y + 1 != maze.height-1 && hero.y + 1 != 0 && crush != 0){
+                    crushWall(maze, hero, 2);
+                    crush--;
+                    crushPoint(crush, maze);
+                }
+            }
+            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_LEFT) && maze.maze[hero.y][hero.x - 1] == wall){
+                if(hero.x - 1 != maze.width-1 && hero.x - 1 != 0 && crush != 0){
+                    crushWall(maze, hero, 3);
+                    crush--;
+                    crushPoint(crush, maze);
+                }
+            }
+            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_RIGHT) && maze.maze[hero.y][hero.x + 1] == wall){
+                if(hero.x + 1 != maze.width-1 && hero.x + 1 != 0 && crush != 0){
+                    crushWall(maze, hero, 4);
+                    crush--;
+                    crushPoint(crush, maze);
+                }
+            }
             if(GetAsyncKeyState(VK_UP) && maze.maze[hero.y - 1][hero.x] != 0){
                 hero.up();
                 moveCounter++;
@@ -226,6 +301,7 @@ void game(Maze maze, Hero hero){
 int main(){
     srand((unsigned)time(NULL));
     int mode = 1;
+    int crush = 0;
     int width = 5,  height = 5;
 
     while(true){
@@ -246,8 +322,8 @@ int main(){
         }else if(mode == 0){
             int flag = 0;
             while(flag == 0){
-                cout << "Enter odd width, height: ";
-                cin >> width >> height;
+                cout << "Enter odd width, height, crush: ";
+                cin >> width >> height >> crush;
                 if(width % 2 == 0 || height % 2 == 0){
                     cout << "Error: no odd width or height\n";
                 }else{
@@ -261,10 +337,16 @@ int main(){
 
         Maze maze = Maze(height, width);
         Hero hero = Hero(height, width);
-
-        game(maze,hero);
+        if(mode == 1){
+            game(maze,hero,0);
+        }else if(mode == 2){
+            game(maze,hero,1);
+        }else if(mode == 3){
+            game(maze,hero,2);
+        }else if(mode == 0){
+            game(maze,hero,crush);
+        }
     }
-
     return 0;
 }
 
