@@ -79,6 +79,65 @@ public:
 };
 
 void stop(){
+void win(){// екран перемоги
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 5));
+    cout<<"      ___                          \n";
+    cout<<"  _.-|   |          |\\__/,|   (`\\  \n";
+    cout<<" {   |   |          |o o  |__ _) ) \n";
+    cout<<"  \"-.|___|        _.( T   )  `  /  \n";
+    cout<<"  .--'-`-.     _((_ `^--' /_<  \\   \n";
+    cout<<".+|______|__.-||__)`-'(((/  (((/   \n";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 10));
+    cout<<" ,--.   ,--.    ,--.    ,--.  ,--. \n";
+    cout<<" |  |   |  |    |  |    |  ,'.|  | \n";
+    cout<<" |  |.'.|  |    |  |    |  |' '  | \n";
+    cout<<" |   ,'.   |    |  |    |  | `   | \n";
+    cout<<" '--'   '--'    `--'    `--'  `--' \n";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 7));
+}
+
+void prew(){// початковий екран
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 10));
+    cout<<"      ,--.   ,--.      ,---.      ,-------.    ,------. \n";
+    cout<<"      |   `.'   |     /  O  \\     `--.   /     |  .---' \n";
+    cout<<"      |  |'.'|  |    |  .-.  |      /   /      |  `--,  \n";
+    cout<<"      |  |   |  |    |  | |  |     /   `--.    |  `---. \n";
+    cout<<"      `--'   `--'    `--' `--'    `-------'    `------' \n";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 13));
+    cout<<"________________________________________________________________  \n";
+    cout<<"|____|____|____|____|____|____|____|____|____|____|____|____|____ \n";
+    cout<<"____|____|____|____|____|____|____|____|____|____|____|____|____| \n";
+    cout<<"__|____|____|____|____|___|_         ____|____|____|____|____|__  \n";
+    cout<<"|____|____|____|____|___|";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 12));
+    cout<<"     (\\.-./)";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 13));
+    cout<<" _|____|____|____|___|___|_  \n";
+    cout<<"____|____|____|____|____|_";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 12));
+    cout<<"  = (^ Y ^) =  ";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 13));
+    cout<<"_|____|____|____|____|__ \n";
+    cout<<"|____|____|____|____|____|___";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 12));
+    cout<<" /`---`\\ ";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 13));
+    cout<<"__|____|____|____|____|____|\n";
+    cout<<"__|____|____|____|____|____|_";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 12));
+    cout<<"U";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 13));
+    cout<<"___|_";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 12));
+    cout<<"U";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 13));
+    cout<<"|____|____|____|____|____|___ \n";
+    cout<<"|____|____|____|____|____|____|____|____|____|____|____|____|____ \n";
+    cout<<"____|____|____|____|____|____|____|____|____|____|____|____|____|_\n";
+    SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 7));
+}
+
+void stop(){ // зупинка на 100мс
     Sleep(100);
     sleep(1/100);
 }
@@ -88,7 +147,7 @@ void game(Maze maze, Hero hero){
     int flag = 0; // індикатор проходження лабіринту
     position.X = 0;
     position.Y = 0;
-    int moveCounter = 0;
+    int moveCounter = 0; // лічильник переміщень
     system("cls"); // очищаємо поле
     SetConsoleCursorPosition(hConsole, position);//курсор в початок
     maze.maze[hero.y][hero.x] = 2; // початкове полложення героя
@@ -99,6 +158,7 @@ void game(Maze maze, Hero hero){
         if(hero.y == 1 && hero.x == maze.width - 2){
             flag++;
             system("cls");
+            win();
         }else{
 
             if(GetAsyncKeyState(VK_UP) && maze.maze[hero.y - 1][hero.x] != 0){
@@ -170,6 +230,7 @@ int main(){
 
     while(true){
         system("cls");
+        prew();
         SetConsoleTextAttribute(hConsole, (WORD) ((0 << 4) | 7));
         cout << "Select mode: \n0)for generate maze arbitrary size not more 99x99\n1)Easy mode\n2)Medium mode\n3)Hard mode\n";
         cin >> mode;
