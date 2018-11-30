@@ -14,7 +14,8 @@ void makeMaze(int**, int, int); //алгоритм
 
 const int wall = 0, pass = 1, hero = 2, exitPortal = 3;//позначення в масиві
 const int red = 12, white = 7, darkGreen = 2, black = 0, magenta = 13, green = 10;//кольори
-const int up = 1, down = 2, left = 3, right = 4; //направлення
+const int up = 1, down = 2, left = 3, right = 4 ; //направлення
+const int upCrush = 5, downCrush = 6, leftCrush = 7, rightCrush = 8;//удари
 const int maxSize = 99; // максимальний розмір лабіринту
 
 
@@ -194,6 +195,43 @@ void crushPoint(int crush, Maze maze){
     }
 }
 
+int keyboardHandler(Maze maze, Hero player, int crush){
+    while(true){
+        if(GetAsyncKeyState(VK_UP) && maze.maze[player.y - 1][player.x] != wall){
+            return up;
+        }
+        if(GetAsyncKeyState(VK_DOWN) && maze.maze[player.y + 1][player.x] != wall){
+            return down;
+        }
+        if(GetAsyncKeyState(VK_LEFT) && maze.maze[player.y][player.x - 1] != wall){
+            return left;
+        }
+        if(GetAsyncKeyState(VK_RIGHT) && maze.maze[player.y][player.x + 1] != wall){
+            return right;
+        }
+        if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_UP) && maze.maze[player.y - 1][player.x] == wall){
+            if(player.y - 1 != maze.height-1 && player.y - 1 != 0 && crush != 0){
+                return upCrush;
+            }
+        }
+        if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_DOWN) && maze.maze[player.y + 1][player.x] == wall){
+            if(player.y + 1 != maze.height-1 && player.y + 1 != 0 && crush != 0){
+                return downCrush;
+            }
+        }
+        if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_LEFT) && maze.maze[player.y][player.x - 1] == wall){
+            if(player.x - 1 != maze.width-1 && player.x - 1 != 0 && crush != 0){
+                return leftCrush;
+            }
+        }
+        if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_RIGHT) && maze.maze[player.y][player.x + 1] == wall){
+            if(player.x + 1 != maze.width-1 && player.x + 1 != 0 && crush != 0){
+                return rightCrush;
+            }
+        }
+    }
+}
+
 void game(Maze maze, Hero player, int crush){
     unsigned int start_time, end_time, search_time;
     int flag = 0; // індикатор проходження лабіринту
@@ -214,85 +252,87 @@ void game(Maze maze, Hero player, int crush){
             system("cls");
             win();
         }else{
-            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_UP) && maze.maze[player.y - 1][player.x] == wall){
-                if(player.y - 1 != maze.height-1 && player.y - 1 != 0 && crush != 0){
+            switch(keyboardHandler(maze, player, crush)){
+                case up:{
+                    player.up();
+                    moveCounter++;
+                    maze.maze[player.y][player.x] = hero;
+                    maze.maze[player.y + 1][player.x] = pass;
+
+                    position.Y = player.y;
+                    SetConsoleCursorPosition(hConsole, position);
+                    maze.visual(player.y);
+
+                    position.Y = player.y + 1;
+                    SetConsoleCursorPosition(hConsole, position);
+                    maze.visual(player.y + 1);
+                    stop();
+                    break;
+                }
+                case down:{
+                    player.down();
+                    moveCounter++;
+                    maze.maze[player.y][player.x] = hero;
+                    maze.maze[player.y-1][player.x] = pass;
+
+                    position.Y = player.y;
+                    SetConsoleCursorPosition(hConsole, position);
+                    maze.visual(player.y);
+
+                    position.Y = player.y - 1;
+                    SetConsoleCursorPosition(hConsole, position);
+                    maze.visual(player.y - 1);
+                    stop();
+                    break;
+                }
+                case left:{
+                    player.left();
+                    moveCounter++;
+                    maze.maze[player.y][player.x] = hero;
+                    maze.maze[player.y][player.x + 1] = pass;
+
+                    position.Y = player.y;
+                    SetConsoleCursorPosition(hConsole, position);
+                    maze.visual(player.y);
+                    stop();
+                    break;
+                }
+                case right:{
+                    player.right();
+                    moveCounter++;
+                    maze.maze[player.y][player.x] = hero;
+                    maze.maze[player.y][player.x - 1] = pass;
+
+                    position.Y = player.y;
+                    SetConsoleCursorPosition(hConsole, position);
+                    maze.visual(player.y);
+                    stop();
+                    break;
+                }
+                case upCrush:{
                     crushWall(maze, player, up);
                     crush--;
                     crushPoint(crush, maze);
+                    break;
                 }
-            }
-            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_DOWN) && maze.maze[player.y + 1][player.x] == wall){
-                if(player.y + 1 != maze.height-1 && player.y + 1 != 0 && crush != 0){
+                case downCrush:{
                     crushWall(maze, player, down);
                     crush--;
                     crushPoint(crush, maze);
+                    break;
                 }
-            }
-            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_LEFT) && maze.maze[player.y][player.x - 1] == wall){
-                if(player.x - 1 != maze.width-1 && player.x - 1 != 0 && crush != 0){
+                case leftCrush:{
                     crushWall(maze, player, left);
                     crush--;
                     crushPoint(crush, maze);
+                    break;
                 }
-            }
-            if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_RIGHT) && maze.maze[player.y][player.x + 1] == wall){
-                if(player.x + 1 != maze.width-1 && player.x + 1 != 0 && crush != 0){
+                case rightCrush:{
                     crushWall(maze, player, right);
                     crush--;
                     crushPoint(crush, maze);
+                    break;
                 }
-            }
-            if(GetAsyncKeyState(VK_UP) && maze.maze[player.y - 1][player.x] != 0){
-                player.up();
-                moveCounter++;
-                maze.maze[player.y][player.x] = hero;
-                maze.maze[player.y + 1][player.x] = pass;
-
-                position.Y = player.y;
-                SetConsoleCursorPosition(hConsole, position);
-                maze.visual(player.y);
-
-                position.Y = player.y + 1;
-                SetConsoleCursorPosition(hConsole, position);
-                maze.visual(player.y + 1);
-                stop();
-            }
-            if(GetAsyncKeyState(VK_DOWN) && maze.maze[player.y + 1][player.x] != 0){
-                player.down();
-                moveCounter++;
-                maze.maze[player.y][player.x] = hero;
-                maze.maze[player.y-1][player.x] = pass;
-
-                position.Y = player.y;
-                SetConsoleCursorPosition(hConsole, position);
-                maze.visual(player.y);
-
-                position.Y = player.y - 1;
-                SetConsoleCursorPosition(hConsole, position);
-                maze.visual(player.y - 1);
-                stop();
-            }
-            if(GetAsyncKeyState(VK_LEFT) && maze.maze[player.y][player.x - 1] != 0){
-                player.left();
-                moveCounter++;
-                maze.maze[player.y][player.x] = hero;
-                maze.maze[player.y][player.x + 1] = pass;
-
-                position.Y = player.y;
-                SetConsoleCursorPosition(hConsole, position);
-                maze.visual(player.y);
-                stop();
-            }
-            if(GetAsyncKeyState(VK_RIGHT) && maze.maze[player.y][player.x + 1] != 0){
-                player.right();
-                moveCounter++;
-                maze.maze[player.y][player.x] = hero;
-                maze.maze[player.y][player.x - 1] = pass;
-                position.Y = player.y;
-
-                SetConsoleCursorPosition(hConsole, position);
-                maze.visual(player.y);
-                stop();
             }
         }
     }
