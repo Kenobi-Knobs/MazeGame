@@ -1,5 +1,6 @@
 # MazeGame
 
+Passage of mazes for speed and steps.
 
 ## Contact
 

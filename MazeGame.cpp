@@ -23,6 +23,8 @@ enum mode {freeMode = 0, easy, medium, hard};//режим гри
 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); //доступ до консолі для зміни кольору і положення курсора
 COORD position; // позиція курсора
+// position.X = 0;
+// position.Y = 0;
 
 class Maze{ //лабіринт
 public:
@@ -67,22 +69,59 @@ public:
 
 class Hero{ //герой
 public:
+    int moveCounter = 0;
     int x, y; //положення героя
     Hero(int h, int w){ // конструктор
         y = h - 2;
         x = 1;
     }
-    void up(){ //крок вверх
+    void up(Maze maze){ //крок вверх
         y--;
+        maze.maze[y][x] = hero;
+        maze.maze[y + 1][x] = pass;
+
+        position.Y = y;
+        SetConsoleCursorPosition(hConsole, position);
+        maze.visual(y);
+
+        position.Y = y + 1;
+        SetConsoleCursorPosition(hConsole, position);
+        maze.visual(y + 1);
+        moveCounter++;
     }
-    void down(){ //крок вниз
+    void down(Maze maze){ //крок вниз
         y++;
+        maze.maze[y][x] = hero;
+        maze.maze[y-1][x] = pass;
+
+        position.Y = y;
+        SetConsoleCursorPosition(hConsole, position);
+        maze.visual(y);
+
+        position.Y = y - 1;
+        SetConsoleCursorPosition(hConsole, position);
+        maze.visual(y - 1);
+        moveCounter++;
     }
-    void right(){ //крок вправо
+    void right(Maze maze){ //крок вправо
         x++;
+        maze.maze[y][x] = hero;
+        maze.maze[y][x - 1] = pass;
+
+        position.Y = y;
+        SetConsoleCursorPosition(hConsole, position);
+        maze.visual(y);
+        moveCounter++;
     }
-    void left(){ //крок вліво
+    void left(Maze maze){ //крок вліво
         x--;
+        maze.maze[y][x] = hero;
+        maze.maze[y][x + 1] = pass;
+
+        position.Y = y;
+        SetConsoleCursorPosition(hConsole, position);
+        maze.visual(y);
+        moveCounter++;
     }
 };
 
@@ -232,6 +271,55 @@ int keyboardHandler(Maze maze, Hero player, int crush){
     }
 }
 
+void move(Maze &maze, Hero &player, int &crush){
+    switch(keyboardHandler(maze, player, crush)){
+        case up:{
+            player.up(maze);
+            stop();
+            break;
+        }
+        case down:{
+            player.down(maze);
+            stop();
+            break;
+        }
+        case left:{
+            player.left(maze);
+            stop();
+            break;
+        }
+        case right:{
+            player.right(maze);
+            stop();
+            break;
+        }
+        case upCrush:{
+            crushWall(maze, player, up);
+            crush--;
+            crushPoint(crush, maze);
+            break;
+        }
+        case downCrush:{
+            crushWall(maze, player, down);
+            crush--;
+            crushPoint(crush, maze);
+            break;
+        }
+        case leftCrush:{
+            crushWall(maze, player, left);
+            crush--;
+            crushPoint(crush, maze);
+            break;
+        }
+        case rightCrush:{
+            crushWall(maze, player, right);
+            crush--;
+            crushPoint(crush, maze);
+            break;
+        }
+    }
+}
+
 void game(Maze maze, Hero player, int crush){
     unsigned int start_time, end_time, search_time;
     int flag = 0; // індикатор проходження лабіринту
@@ -244,102 +332,22 @@ void game(Maze maze, Hero player, int crush){
     maze.maze[player.y][player.x] = hero; // початкове полложення героя
     maze.visual(); // відрисувати кадр
     crushPoint(crush, maze);
-
     start_time = clock();
+    //цикл гри
     while(flag == 0){
         if(player.y == 1 && player.x == maze.width - 2){
             flag++;
             system("cls");
             win();
         }else{
-            switch(keyboardHandler(maze, player, crush)){
-                case up:{
-                    player.up();
-                    moveCounter++;
-                    maze.maze[player.y][player.x] = hero;
-                    maze.maze[player.y + 1][player.x] = pass;
-
-                    position.Y = player.y;
-                    SetConsoleCursorPosition(hConsole, position);
-                    maze.visual(player.y);
-
-                    position.Y = player.y + 1;
-                    SetConsoleCursorPosition(hConsole, position);
-                    maze.visual(player.y + 1);
-                    stop();
-                    break;
-                }
-                case down:{
-                    player.down();
-                    moveCounter++;
-                    maze.maze[player.y][player.x] = hero;
-                    maze.maze[player.y-1][player.x] = pass;
-
-                    position.Y = player.y;
-                    SetConsoleCursorPosition(hConsole, position);
-                    maze.visual(player.y);
-
-                    position.Y = player.y - 1;
-                    SetConsoleCursorPosition(hConsole, position);
-                    maze.visual(player.y - 1);
-                    stop();
-                    break;
-                }
-                case left:{
-                    player.left();
-                    moveCounter++;
-                    maze.maze[player.y][player.x] = hero;
-                    maze.maze[player.y][player.x + 1] = pass;
-
-                    position.Y = player.y;
-                    SetConsoleCursorPosition(hConsole, position);
-                    maze.visual(player.y);
-                    stop();
-                    break;
-                }
-                case right:{
-                    player.right();
-                    moveCounter++;
-                    maze.maze[player.y][player.x] = hero;
-                    maze.maze[player.y][player.x - 1] = pass;
-
-                    position.Y = player.y;
-                    SetConsoleCursorPosition(hConsole, position);
-                    maze.visual(player.y);
-                    stop();
-                    break;
-                }
-                case upCrush:{
-                    crushWall(maze, player, up);
-                    crush--;
-                    crushPoint(crush, maze);
-                    break;
-                }
-                case downCrush:{
-                    crushWall(maze, player, down);
-                    crush--;
-                    crushPoint(crush, maze);
-                    break;
-                }
-                case leftCrush:{
-                    crushWall(maze, player, left);
-                    crush--;
-                    crushPoint(crush, maze);
-                    break;
-                }
-                case rightCrush:{
-                    crushWall(maze, player, right);
-                    crush--;
-                    crushPoint(crush, maze);
-                    break;
-                }
-            }
+            move(maze, player, crush);
         }
     }
+
     end_time = clock();
     search_time = end_time - start_time;
     SetConsoleTextAttribute(hConsole, (WORD) ((black << 4) | white));
-    cout << " Time : " << search_time/1000.0 << "        Move : " << moveCounter << endl;
+    cout << " Time : " << search_time/1000.0 << "        Move : " << player.moveCounter << endl;
     cout <<"__________________________________\n";
     system("pause");
 }
