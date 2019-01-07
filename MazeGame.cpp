@@ -23,8 +23,6 @@ enum mode {freeMode = 0, easy, medium, hard};//режим гри
 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); //доступ до консолі для зміни кольору і положення курсора
 COORD position; // позиція курсора
-// position.X = 0;
-// position.Y = 0;
 
 class Maze{ //лабіринт
 public:
@@ -358,6 +356,7 @@ int main(){
     mode gameMode = freeMode;
     int modeKey = gameMode;
     int width = 21,  height = 21;
+    PlaySound("soundtrack.wav", NULL, SND_ASYNC|SND_FILENAME|SND_LOOP);
 
     while(true){
         system("cls");
@@ -391,8 +390,8 @@ int main(){
             crush = 1;
             break;
         case hard:
-            width = 31;
-            height = 31;
+            width = 47;
+            height = 47;
             crush = 2;
             break;
         default:
